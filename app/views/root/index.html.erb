@@ -1,0 +1,47 @@
+<div id='content'>
+<table>
+	<tr>
+		<th><%= link_to("Alpha", "/alphas") %></th>
+		<th><%= link_to("Beta", "/betas") %></th>
+		<th><%= link_to("Omega", "/omegas") %></th>
+	</tr>
+	<tr>
+		<td>
+<% unless @alpha == nil %>
+	<% for alpha in @alpha %>
+		<%= alpha.stringattr %><br>
+		<%= alpha.integerattr %><br>
+		<%= alpha.dateattr %><br>
+		<%= alpha.booleanattr %><br>
+		<hr>
+	<% end %>
+<% end %>
+		</td>
+		<td>
+<% unless @beta == nil %>
+	<% for beta in @beta %>
+		<%= beta.stringattr %><br>
+		<%= beta.integerattr %><br>
+		<%= beta.dateattr %><br>
+		<%= beta.booleanattr %><br>
+		<hr>
+	<% end %>
+<% end %>
+		</td>
+		<td>
+<% unless @omega == nil %>
+	<% for omega in @omega %>
+		<%= omega.stringattr %><br>
+		<%= omega.integerattr %><br>
+		<%= omega.dateattr %><br>
+		<%= omega.booleanattr %><br>
+		<hr>
+	<% end %>	
+<% end %>
+		</td>
+	</tr>
+</table>
+</div>
+
+
+<%= request.parameters[:controller] %>

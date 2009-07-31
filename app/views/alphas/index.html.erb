@@ -1,0 +1,28 @@
+<%#= print_breadcrumbs %>
+<%#= session[:breadcrumbs] %>
+<table border=1>
+	<tr>
+		<!-- <th>Alphas</th> -->
+	</tr>
+	<tr>
+		<% unless @alpha == nil %>
+			<% for alpha in @alpha %>
+		<td>
+		<%= alpha.id %><br>
+		<%= alpha.stringattr %><br>
+		<%= alpha.integerattr %><br>
+		<%= alpha.dateattr %><br>
+		<%= alpha.booleanattr %><br>
+		
+		<ul>
+			<h5>beta</h5>
+		<li><%#= alpha.betas.length %></li>
+		<li><%#= alpha.betas.length %></li>
+		<li><%#= alpha.betas.length %></li>
+		</ul>
+
+</td>
+	<% end %>
+<% end %>
+</tr>
+</table>

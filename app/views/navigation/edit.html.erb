@@ -1,0 +1,46 @@
+<% form_for("/#{@nav_model.id}/edit") do |f| %>
+<table>
+	<tr>
+			<td>
+			<h3><%= @nav_model.name %></h3><br>
+			<ul>
+				<table>
+					<tr>
+						<td><li>Included?:</td> <td><%= f.select :included, [ "true", "false" ], :selected => @nav_model.included.to_s %></li></td>
+					</tr>
+					<tr>
+						<td><li>Controller:</td> <td><%= @nav_model.controller %></li></td>
+					</tr>	
+					<tr>
+						<td><li>Display Name:</td> <td><%= @nav_model.display_name %></li></td>
+					</tr>	
+					<tr>
+						<td><li>Display Count?:</td> <td><%= f.select :display_count, [ "true", "false" ], :selected => @nav_model.display_count.to_s %></li></td>
+					</tr>
+				</table>
+			</ul>
+			<h4>Attributes:</h4><br>
+			<% @nav_model.nav_attributes.each do |attrib| %>
+				<h5><%= attrib.name %></h5>
+				<ul>
+					<table>
+						<tr>
+							<td><li>Included?:</td> <td><%#= f.select_tag :included, options_for_select([ true, false ]) %> <%= attrib.included %></li></td>
+						</tr>
+						<tr>
+							<td><li>Display Name:</td> <td><%= attrib.display_name %></li></td>
+						</tr>
+						<tr>
+							<td><li>Display Count?:</td> <td><%#= f.select_tag :included, options_for_select([ true, false ]) %> <%= attrib.display_count %></li></td>
+						</tr>
+						<tr>
+							<td><li>Range?:</td> <td><%#= f.select_tag :included, options_for_select([ true, false ]) %> <%= attrib.range %></li></td>
+						</tr>
+					</table>
+				</ul>
+			<% end %>
+			</td>
+	</tr>
+</table>
+<%= f.submit 'Update' %>
+<% end %>

@@ -1,0 +1,19 @@
+<%#= print_breadcrumbs %>
+<table>
+	<tr>
+		<th>Omegas</th>
+	</tr>
+	<tr>
+		<td>
+<% unless @omega == nil %>
+	<% for omega in @omega %>
+		<%= omega.stringattr %><br>
+		<%= omega.integerattr %><br>
+		<%= omega.dateattr %><br>
+		<%= omega.booleanattr %><br>
+		<hr>
+	<% end %>
+<% end %>
+</td>
+</tr>
+</table>
