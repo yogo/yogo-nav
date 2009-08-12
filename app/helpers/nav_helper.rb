@@ -5,9 +5,10 @@ module NavHelper
   # differentiate the divs, as well as allowing the algorithm to know what level it is on. This 
   # method basically creates the HTML. 
   def nav_display(controller, level=1)
+    
     table = fetch_table_by_controller(controller)
     history = [table]
-    if controller_included? && NAV_CONFIG[table]['searchable']
+    if controller_included? && NavModel.first(:name => table).included
       display = "<div id='nav_bar'>\n"
       display += "<a href='#' onclick=\"toggle_visibility('#{table + level.to_s}');\">" + 
                  "#{fetch_table_name(table)}</a><br>\n"
@@ -28,8 +29,8 @@ module NavHelper
             end
           else
             display += "<a href='#' onclick=\"toggle_visibility" +
-                       "('#{table + level.to_s + attribute.to_s}');\">" +
-                       "#{fetch_attribute_name(table, attribute.to_s)}</a><br>\n"
+                       "('#{table + level.to_s + attribute}');\">" +
+                       "#{fetch_attribute_name(table, attribute)}</a><br>\n"
             display += "<div id='#{table + level.to_s + attribute}', style='display:none'>\n"
             display += "<ul>\n"
             fetch_range_display(table, attribute).each do |range|
@@ -86,38 +87,50 @@ module NavHelper
   # skipped.
   def fetch_attributes(table)
     attributes = []
-    if NAV_CONFIG[table]['attributes']
-      NAV_CONFIG[table]['attributes'].each_pair do |attribute, values|
-        if values['include']
-          attributes << attribute
+    if NavModel.first(:name => table).nav_attributes
+      NavModel.first(:name => table).nav_attributes.each do |attribute|
+        if attribute.included
+          attributes << attribute.name
         end
       end
     end
-    attributes.sort_by {|attribute| attribute}
-    if has_relationships?(table)
-      fetch_relationships(table).each_pair do |relative_table, relationship|
-        unless !NAV_CONFIG[relative_table]['searchable']
-          attributes << {relative_table => relationship} 
-        end
-      end
-    end
+    # if NAV_CONFIG[table]['attributes']
+    # attributes.sort_by {|attribute| attribute}
+    # if has_relationships?(table)
+    #   fetch_relationships(table).each_pair do |relative_table, relationship|
+    #     unless !NAV_CONFIG[relative_table]['searchable']
+    #       attributes << {relative_table => relationship} 
+    #     end
+    #   end
+    # end
     return attributes
   end
 
   # Gathers the values for display in the nav pane for a particular attribute and table.
   def fetch_range_display(table, attribute)
-    NAV_CONFIG[table]['attributes'][attribute]['values']['display_values'].split(" . ")
+    names = []
+    x = NavModel.first(:name => table).nav_attributes.first(:name => attribute)
+    x.nav_display_values.each do |display|
+      names << display.value
+    end
+    return names
   end
 
   # Checks to see the controller in question has been specified in nav_config.yml.
   def controller_included?
     controller = (request.parameters[:controller])
-    NAV_CONFIG.each_pair do |mod, options|
-      if options.has_value?(controller)
+    NavModel.all.each do |model|
+      if model.controller == controller
         return true
       end
     end
-    false
+    return false
+    # NAV_CONFIG.each_pair do |mod, options|
+    #   if options.has_value?(controller)
+    #     return true
+    #   end
+    # end
+    # false
   end
 
   # Determines is the sent parameters are valid for a given table.
@@ -142,10 +155,9 @@ module NavHelper
   def build_search_conditions(table, params)
     query = "{"
     params.each_pair do |key, value| 
-      if NAV_CONFIG[table]['attributes'][key]['range']
+      if NavModel.first(:name => table).nav_attributes.first(:name => key).range
         min, max, range_type = parse_value_range(value)
         query = query + ":#{key}.lt => #{max}, :#{key}.gt => #{min},"
-        #query = query + ":#{key}.lt => #{eval("(#{value}).max")}, :#{key}.gt => #{eval("(#{value}).min")},"
       else
         query = query + ":#{key} => '#{(value)}',"
       end
@@ -173,7 +185,7 @@ module NavHelper
   # present then the new param will be substituted if a similar one is present, otherwise it is 
   # appended to the end.
   def fetch_path(table, attribute, range)
-    controller = NAV_CONFIG[table]['controller']
+    controller = NavModel.first(:name => table).controller
     database_value = fetch_db_value(table, attribute, range)
     if params[table.to_sym] == nil
       link_to("#{range}", "#{controller}?#{request.url.split("?")[1]}&#{table}[#{attribute}]=#{database_value}")
@@ -196,43 +208,47 @@ module NavHelper
   # Gathers the database value out of the nav_config.yml file using the display value as a 
   # reference.
   def fetch_db_value(table, attribute, range)
-    database = NAV_CONFIG[table]['attributes'][attribute]['values']['database_values'].split(' . ')
-    display  = NAV_CONFIG[table]['attributes'][attribute]['values']['display_values'].split(' . ')
-    return database[display.index(range)]
+    NavModel.first(:name => table).nav_attributes.first(:name => attribute).nav_display_values.first(:value => range).nav_database_value.value
   end
  
   # Gets the display value set in nav_config.yml for the table.
   def fetch_table_name(table)
-    return NAV_CONFIG[table]['display_value']
+    # return NAV_CONFIG[table]['display_value']
+    NavModel.first(:name => table).display_name
   end
  
   # Gets the display value set in nav_config.yml for the attribute in a certain table.
   def fetch_attribute_name(table, attribute)
-    return NAV_CONFIG[table]['attributes'][attribute]['display_value']
+    NavModel.first(:name => table).nav_attributes.first(:name => attribute).display_name
   end
 
   # Collects results using the query constructed by the build_search_conditions method.
   def collect_nav_results
     table = fetch_table_by_controller(request.parameters[:controller]) 
-      if valid_params?(table, params[table.to_sym])
-        if params[table.to_sym]
-          conditions = build_search_conditions(table, params[table.to_sym])
-          return table.capitalize.constantize.all(eval(conditions))
-        else
-          return table.capitalize.constantize.all
-        end
+    if valid_params?(table, params[table.to_sym])
+      if params[table.to_sym]
+        conditions = build_search_conditions(table, params[table.to_sym])
+        return table.capitalize.constantize.all(eval(conditions))
+      else
+        return table.capitalize.constantize.all
       end
+    end
   end
  
   # Determines which table is being referenced by a particular controller.
   def fetch_table_by_controller(controller)
-    NAV_CONFIG.each_pair do |table, options|
-      if options.has_value?(controller)
-        if options.index(controller) == 'controller'
-          return table.downcase
-        end
-      end
+    table = NavModel.first(:controller => controller)
+    if table
+      return table.name
     end
+    # # # NAV_CONFIG.each_pair do |table, options|
+    # # #   if options.has_value?(controller)
+    # # #     if options.index(controller) == 'controller'
+    # # #       return table.downcase
+    # # #     end
+    # # #   end
+    # # # end
+    # return 'alphas'
   end
 
   # This method is not currently in use, but folds the nav tree if more than one table is present
@@ -328,9 +344,9 @@ module NavHelper
     unless session[:breadcrumbs].empty?
       out << session[:breadcrumbs].map {|crumb|
         if session[:breadcrumbs][-1] == crumb
-          "#{NAV_CONFIG[fetch_table_by_controller(request.parameters[:controller]).to_s.downcase]['attributes'][crumb[:name]]['display_value']} : #{crumb[:value].titleize}"
+         # "#{NAV_CONFIG[fetch_table_by_controller(request.parameters[:controller]).to_s.downcase]['attributes'][crumb[:name]]['display_value']} : #{crumb[:value].titleize}"
         else
-          link_to("#{NAV_CONFIG[fetch_table_by_controller(request.parameters[:controller]).to_s.downcase]['attributes'][crumb[:name]]['display_value']}" + " : " + crumb[:value].titleize, crumb[:link])
+         # link_to("#{NAV_CONFIG[fetch_table_by_controller(request.parameters[:controller]).to_s.downcase]['attributes'][crumb[:name]]['display_value']}" + " : " + crumb[:value].titleize, crumb[:link])
         end
       }
     end

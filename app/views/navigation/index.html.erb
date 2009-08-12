@@ -1,4 +1,4 @@
-<%# form_tag( {:controller => :navigation, :action => :update_nav}, :method => :get, :name => :nav_form) do %>
+<% form_tag( {:controller => :navigation, :action => :update_nav}, :method => :get, :name => :nav_form) do %>
 <table>
 	<tr>
 		<% @nav_models.each do |mod| %>
@@ -37,6 +37,13 @@
 						<tr>
 							<td><li>Range?:</td> <td><%= attrib.range %></li></td>
 						</tr>
+						<tr>
+							<td>
+								<% attrib.nav_display_values.each do |display_value| %>
+									<%= display_value.value %> : <%= display_value.nav_database_value.value %>
+								<% end %><br>
+							</td>
+						</tr>
 					</table>
 				</ul>
 			<% end %>
@@ -45,4 +52,4 @@
 	</tr>
 </table>
 <%#= submit_tag 'Update' %>
-<%# end %> 
+<% end %> 

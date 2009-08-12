@@ -1,4 +1,3 @@
-puts 'hello alpha'
 class AlphasController < ApplicationController
   # GET /alphas
   # GET /alphas.xml

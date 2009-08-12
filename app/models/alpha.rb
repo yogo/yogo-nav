@@ -12,7 +12,7 @@ class Alpha
   property :id, Serial
   property :stringattr, String
   property :integerattr, Integer
-  property :dateattr, Date
+  property :dateattr, String
   property :booleanattr, Boolean
   
   #property :betas, Array
@@ -25,7 +25,7 @@ class Alpha
     i.times do |x|
       Alpha.create(:integerattr => rand(100), 
                    :stringattr => Alpha.random_string,
-                   :dateattr => nil,
+                   :dateattr => "nil",
                    :booleanattr => [true, false][rand(2)]
                    ).save
     end

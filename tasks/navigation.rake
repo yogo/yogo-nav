@@ -14,6 +14,7 @@ namespace :nav do
         end
       end
     end
+    holy_hand_grenade
     initial_generation(models)
   end
   
@@ -36,6 +37,16 @@ namespace :nav do
         temp_mod.save
       end
     end
+  end
+  
+  def holy_hand_grenade
+    NavModel.all.each do |i|
+      i.destroy
+    end
+    NavAttribute.all.each do |i|
+      i.destroy
+    end
+    puts "KAPLOW!"
   end
   
 end

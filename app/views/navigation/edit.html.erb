@@ -1,4 +1,4 @@
-<% form_for("/#{@nav_model.id}/edit") do |f| %>
+<% form_tag( {:controller => :navigation, :action => :update_navigation}, :with =>{:id => params[:id]}, :method => :get, :name => "thing", :id => @nav_model.id) do %>
 <table>
 	<tr>
 			<td>
@@ -6,16 +6,20 @@
 			<ul>
 				<table>
 					<tr>
-						<td><li>Included?:</td> <td><%= f.select :included, [ "true", "false" ], :selected => @nav_model.included.to_s %></li></td>
+						<td><li>Included?:</td> 
+						<td><%= select_tag 'nav_model[included]', options_for_select([ 'true', 'false' ], :selected => @nav_model.included.to_s)  %></li></td>
 					</tr>
 					<tr>
-						<td><li>Controller:</td> <td><%= @nav_model.controller %></li></td>
+						<td><li>Controller:</td> 
+						<td><%= text_field_tag 'nav_model[controller]', @nav_model.controller, :size => 20 %></li></td>
 					</tr>	
 					<tr>
-						<td><li>Display Name:</td> <td><%= @nav_model.display_name %></li></td>
+						<td><li>Display Name:</td> 
+						<td><%= text_field_tag 'nav_model[display_name]', @nav_model.display_name, :size => 20 %></li></td>
 					</tr>	
 					<tr>
-						<td><li>Display Count?:</td> <td><%= f.select :display_count, [ "true", "false" ], :selected => @nav_model.display_count.to_s %></li></td>
+						<td><li>Display Count?:</td> 
+						<td><%= select_tag 'nav_model[display_count]', options_for_select([ 'true', 'false' ], :selected => @nav_model.display_count.to_s) %></li></td>
 					</tr>
 				</table>
 			</ul>
@@ -25,16 +29,47 @@
 				<ul>
 					<table>
 						<tr>
-							<td><li>Included?:</td> <td><%#= f.select_tag :included, options_for_select([ true, false ]) %> <%= attrib.included %></li></td>
-						</tr>
-						<tr>
-							<td><li>Display Name:</td> <td><%= attrib.display_name %></li></td>
-						</tr>
-						<tr>
-							<td><li>Display Count?:</td> <td><%#= f.select_tag :included, options_for_select([ true, false ]) %> <%= attrib.display_count %></li></td>
-						</tr>
-						<tr>
-							<td><li>Range?:</td> <td><%#= f.select_tag :included, options_for_select([ true, false ]) %> <%= attrib.range %></li></td>
+							<td>
+								<table>
+									<tr>
+										<td><li>Included?:</td> 
+											<td><%= select_tag "nav_model[attributes][#{attrib.name}][included]", options_for_select([ 'true', 'false' ], :selected => attrib.included.to_s) %></li></td>
+									</tr>
+									<tr>
+										<td><li>Display Name:</td> 
+										<td><%= text_field_tag "nav_model[attributes][#{attrib.name}][display_name]", attrib.display_name, :size => 20 %></li></td>
+									</tr>
+									<tr>
+										<td><li>Display Count?:</td> 
+										<td><%= select_tag "nav_model[attributes][#{attrib.name}][display_count]", options_for_select([ 'true', 'false' ], :selected => attrib.display_count.to_s) %></li></td>
+									</tr>
+									<tr>
+										<td><li>Range?:</td> 
+										<td><%= select_tag "nav_model[attributes][#{attrib.name}][range]", options_for_select([ 'true', 'false' ], :selected => attrib.range.to_s, :id => "#{@nav_model.name}_#{attrib.name}") %></li>
+									</tr>
+									<tr>
+										<td>
+											<%= link_to_remote('Add Values', :url => {:controller => :navigation, :action => :add_value}, :update => "add_value_#{@nav_model.name}_#{attrib.name}", :position => :bottom, 
+											:with => "'value_type='+$('nav_model_attributes_#{attrib.name}_range').value + '&model_name=' + '#{@nav_model.name}' + '&attr_name=' + '#{attrib.name}'") %>
+										</td>
+									</tr>
+								</table>
+							</td>
+							<td>
+								<table>
+									<th>Current Values</th>
+									<th>Remove?</th>
+									<tr>
+										<td>
+								<% attrib.nav_display_values.each do |values| %>
+									<%= values.value + " : " + values.nav_database_value.value %><br>
+								<% end %>
+								<%= check_box_tag "remove"%>
+								</td>
+								</tr>
+								</table>
+								<div id='<%= "add_value_#{@nav_model.name}_#{attrib.name}" %>'></div>
+							</td>
 						</tr>
 					</table>
 				</ul>
@@ -42,5 +77,6 @@
 			</td>
 	</tr>
 </table>
-<%= f.submit 'Update' %>
+<%= hidden_field_tag("id", value = @nav_model.id, options = {}) %>
+<%= submit_tag %>
 <% end %>

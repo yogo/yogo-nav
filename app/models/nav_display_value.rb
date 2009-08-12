@@ -2,11 +2,8 @@ class NavDisplayValue
   
   include DataMapper::Resource
   
-  # def self.set_default_repository_name
-  #   return :nav_data
-  # end
-  
   belongs_to :nav_attribute
+  has 1, :nav_database_value
   
   property :id, Serial
   property :value, String

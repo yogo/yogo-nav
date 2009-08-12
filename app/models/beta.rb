@@ -15,7 +15,7 @@ class Beta
     property :id, Serial
     property :stringattr, String
     property :integerattr, Integer
-    property :dateattr, Date
+    property :dateattr, String
     property :booleanattr, Boolean
 
     def self.random_string
@@ -26,7 +26,7 @@ class Beta
       i.times do |x|
         Beta.create(:integerattr => rand(100), 
                      :stringattr => Beta.random_string,
-                     :dateattr => nil,
+                     :dateattr => 'nil',
                      :booleanattr => [true, false][rand(2)]
                      ).save
       end

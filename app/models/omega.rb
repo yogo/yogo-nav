@@ -12,7 +12,7 @@ class Omega
   property :id, Serial
   property :stringattr, String
   property :integerattr, Integer
-  property :dateattr, Date
+  property :dateattr, String
   property :booleanattr, Boolean  
   
   def self.random_string
@@ -23,7 +23,7 @@ class Omega
     i.times do |x|
       Omega.create(:integerattr => rand(100), 
                    :stringattr => Omega.random_string,
-                   :dateattr => nil,
+                   :dateattr => 'nil',
                    :booleanattr => [true, false][rand(2)]
                    ).save
     end
