@@ -57,16 +57,20 @@
 							</td>
 							<td>
 								<table>
+									<% unless attrib.nav_display_values.empty? %>
 									<th>Current Values</th>
 									<th>Remove?</th>
+									<% end %>
+										<% attrib.nav_display_values.each do |values| %>
 									<tr>
 										<td>
-								<% attrib.nav_display_values.each do |values| %>
 									<%= values.value + " : " + values.nav_database_value.value %><br>
-								<% end %>
-								<%= check_box_tag "remove"%>
-								</td>
-								</tr>
+										</td>
+										<td>
+											<%= check_box_tag "nav_model[remove][#{attrib.id}][#{values.id}]"%>
+											</td>
+									</tr>
+									<% end %>
 								</table>
 								<div id='<%= "add_value_#{@nav_model.name}_#{attrib.name}" %>'></div>
 							</td>

@@ -42,6 +42,11 @@ class NavigationController < ApplicationController
         current_attribute.save
       end unless values.nil?
     end
+    params['nav_model']['remove'].each_pair do |attribute, display|
+      display.each_key do |display_id|
+        NavAttribute.get(attribute).nav_display_values.first(:id => display_id).destroy
+      end
+    end unless params['nav_model']['remove'].nil?
     redirect_to '/navigation'
   end
 

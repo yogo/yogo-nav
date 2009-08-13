@@ -8,7 +8,7 @@ module NavHelper
     
     table = fetch_table_by_controller(controller)
     history = [table]
-    if controller_included? && NavModel.first(:name => table).included
+    if controller_included? && NavModel.first(:name => table).included && !empty_contents?(table)
       display = "<div id='nav_bar'>\n"
       display += "<a href='#' onclick=\"toggle_visibility('#{table + level.to_s}');\">" + 
                  "#{fetch_table_name(table)}</a><br>\n"
@@ -105,6 +105,16 @@ module NavHelper
     # end
     return attributes
   end
+  
+  def empty_contents?(table)
+    table = NavModel.first(:name => table)
+    table.nav_attributes.each do |attribute|
+      if attribute.included
+        return false
+      end
+    end
+    return true
+  end
 
   # Gathers the values for display in the nav pane for a particular attribute and table.
   def fetch_range_display(table, attribute)
@@ -125,12 +135,6 @@ module NavHelper
       end
     end
     return false
-    # NAV_CONFIG.each_pair do |mod, options|
-    #   if options.has_value?(controller)
-    #     return true
-    #   end
-    # end
-    # false
   end
 
   # Determines is the sent parameters are valid for a given table.
@@ -156,7 +160,7 @@ module NavHelper
     query = "{"
     params.each_pair do |key, value| 
       if NavModel.first(:name => table).nav_attributes.first(:name => key).range
-        min, max, range_type = parse_value_range(value)
+        min, max = parse_value_range(value)
         query = query + ":#{key}.lt => #{max}, :#{key}.gt => #{min},"
       else
         query = query + ":#{key} => '#{(value)}',"
@@ -167,17 +171,9 @@ module NavHelper
   end
   
   def parse_value_range(value)
-    if value.include?('...')
-      min = value.split('...')[0]
-      max = value.split('...')[1]
-      range_type = '...'
-      return min, max, range_type
-    elsif value.include?('..')
       min = value.split('..')[0]
       max = value.split('..')[1]
-      range_type = '..'
-      return min, max, range_type
-    end
+      return min, max
   end
 
   # Fetch path constructs a path depending on what search criteria is currently present. If there
@@ -241,14 +237,6 @@ module NavHelper
     if table
       return table.name
     end
-    # # # NAV_CONFIG.each_pair do |table, options|
-    # # #   if options.has_value?(controller)
-    # # #     if options.index(controller) == 'controller'
-    # # #       return table.downcase
-    # # #     end
-    # # #   end
-    # # # end
-    # return 'alphas'
   end
 
   # This method is not currently in use, but folds the nav tree if more than one table is present
