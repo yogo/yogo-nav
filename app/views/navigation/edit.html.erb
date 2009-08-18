@@ -25,7 +25,7 @@
 			</ul>
 			<h4>Attributes:</h4><br>
 			<% @nav_model.nav_attributes.each do |attrib| %>
-				<h5><%= attrib.name %></h5>
+				<h5><%= attrib.name %></h5> Remove <%= attrib.name %>? <%= check_box_tag "nav_model[attributes_to_delete][#{attrib.id}]" %>
 				<ul>
 					<table>
 						<tr>

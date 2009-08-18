@@ -1,6 +1,6 @@
 class NavigationController < ApplicationController
   
-  # RESTART YOUR GODDAMNED SERVER BEFORE YOU GO CRAZY HUNTING BUGS THAT ARE NOT THERE!
+  # RESTART YOUR GODDAMNED SERVER BEFORE YOU GO CRAZY HUNTING BUGS THAT ARE NOT THERE! x2
   
   def index
     @nav_models = NavModel.all
@@ -16,6 +16,7 @@ class NavigationController < ApplicationController
                       )
     params['nav_model']['attributes'].each_pair do |attr_name, attr_settings|
       current_attribute = nil
+      # finds the correct attribute to modify (arcane magicks)
       @nav_model.nav_attributes.each do |nav_attribute|
         if nav_attribute.name == attr_name
           current_attribute = nav_attribute
@@ -37,6 +38,7 @@ class NavigationController < ApplicationController
           db_val.save
           dp_val.save
         end
+        # trickery
         dp_val.nav_database_value = db_val
         current_attribute.nav_display_values << dp_val
         current_attribute.save
@@ -47,6 +49,9 @@ class NavigationController < ApplicationController
         NavAttribute.get(attribute).nav_display_values.first(:id => display_id).destroy
       end
     end unless params['nav_model']['remove'].nil?
+    params['nav_model']['attributes_to_delete'].each_key do |attr_id|
+      @nav_model.nav_attributes.get(attr_id).destroy
+    end
     redirect_to '/navigation'
   end
 
@@ -56,6 +61,7 @@ class NavigationController < ApplicationController
 
   # This method calls on the keeper of the sea to render things.
   def add_value
+    # KEEPER OF THE SEA COME FORTH AND RENDER THESE PARTIALS
     session[:counter] ||= 0
     session[:counter] += 1
     if params[:value_type] == "true"
