@@ -4,6 +4,9 @@ module NavHelper
   # parameter determines which table the pane should be focused on, while the level parameter helps
   # differentiate the divs, as well as allowing the algorithm to know what level it is on. This 
   # method basically creates the HTML. 
+  
+  private
+  
   def nav_display(controller, level=1)
     
     table = fetch_table_by_controller(controller)

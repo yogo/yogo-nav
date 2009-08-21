@@ -51,7 +51,7 @@ class NavigationController < ApplicationController
     end unless params['nav_model']['remove'].nil?
     params['nav_model']['attributes_to_delete'].each_key do |attr_id|
       @nav_model.nav_attributes.get(attr_id).destroy
-    end
+    end unless params['nav_model']['attributes_to_delete'].nil?
     redirect_to '/navigation'
   end
 

@@ -1,31 +1,40 @@
 namespace :nav do
   desc "Configure navigation settings."
   task :generate => :environment do
-    require 'config/environment.rb'
-    require 'pp'
-    include NavHelper
-
-    host = 'http://cercus.cns.montana.edu:8090'
-    host = 'http://localhost:8080'
-    persvr = Persevere.new(host)
+    persvr = Persevere.new(ENV['HOST'])
     persvr = JSON.parse(persvr.retrieve("/Class?!core").body)
     models = {}
     persvr.each do |mod|
       model_name = mod['id'][6..-1]
       models.update({model_name => []})
     end
- 
     models.each_pair do |model, properties|
-      collection = JSON.load(RestClient.get("#{host}/#{model}", :accept => 'application/json'))
+      collection = JSON.load(RestClient.get("#{ENV['HOST']}/#{model}", :accept => 'application/json'))
       collection.each do |instance|
         instance.each_pair do |attribute, value|
           update_properties(attribute, value, properties, [attribute])
         end  
       end
-    end 
+    end
     #print_results(models)
     holy_hand_grenade
     generate(models)
+    puts " ...you must be powerful..."
+  end
+  
+  desc "Update navigation settings."
+  task :update => :environment do
+    puts ENV['HOST']
+  end
+  
+  def collect_current_state(models)
+    NavModel.all.each do |nav_model|
+      models.update({nav_model.name => []})
+      nav_model.nav_attributes.each do |nav_attribute|
+        models[nav_model.name] << nav_attribute.name
+      end
+    end
+    return models
   end
   
   def update_properties(attribute, value, properties, path)
@@ -59,8 +68,7 @@ namespace :nav do
         temp_mod.save
       end
     end
-    puts "You have created everything."
-    puts "...you must be powerful..."
+    puts " You have created everything."
   end
   
   # Destroys the demons of the world, and some cute rabbits. Everything has its price
@@ -81,12 +89,12 @@ namespace :nav do
   end
   
   def print_results(models)
-    models.each_pair do |x, y|
-      puts "Model: #{x}"
-      y.each do |z|
-        puts '--- ' + z
+    models.each_pair do |model, attributes|
+      puts "Model: #{model}"
+      attributes.each do |attribute|
+        puts '--- ' + attribute
       end
-      puts "\n"
+      puts
     end
   end
   
