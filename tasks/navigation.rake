@@ -17,7 +17,7 @@ namespace :nav do
       end
     end
     #print_results(models)
-    holy_hand_grenade
+    destroy_models
     generate(models)
     puts " ...you must be powerful..."
   end
@@ -57,22 +57,21 @@ namespace :nav do
                               :display_name  => model_name,
                               :display_count => false
                               )
-      attributes.each do |attrib|
-        temp_attrib = NavAttribute.new(:name          => attrib,
-                                       :included      => false,
-                                       :display_name  => attrib,
-                                       :display_count => false,
-                                       :range         => false 
-                                       )
-        temp_mod.nav_attributes << temp_attrib
+      attributes.each do |attribute|
+        temp_attr = NavAttribute.new(:name          => attribute,
+                                     :included      => false,
+                                     :display_name  => attribute,
+                                     :display_count => false,
+                                     :range         => false 
+                                     )
+        temp_mod.nav_attributes << temp_attr
         temp_mod.save
       end
     end
     puts " You have created everything."
   end
   
-  # Destroys the demons of the world, and some cute rabbits. Everything has its price
-  def holy_hand_grenade
+  def destroy_models
     NavModel.all.each do |i|
       i.destroy
     end
