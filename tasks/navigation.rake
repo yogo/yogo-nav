@@ -24,7 +24,16 @@ namespace :nav do
   
   desc "Update navigation settings."
   task :update => :environment do
-    puts ENV['HOST']
+    models = {}
+    repository(ENV['REPO'].to_sym).adapter.query("SHOW TABLES").each do |mod|
+      models.update({mod => []})
+    end
+    models.each_pair do |model, properties|
+      repository(ENV['REPO'].to_sym).adapter.query("SELECT * FROM #{model.upcase} LIMIT 1")[0].members.each do |attribute|
+        properties << attribute
+      end
+    end
+    generate(models)
   end
   
   def collect_current_state(models)
@@ -54,8 +63,8 @@ namespace :nav do
       temp_mod = NavModel.new(:name          => model_name.downcase.singularize, 
                               :included      => false,
                               :controller    => model_name.downcase,
-                              :display_name  => model_name,
-                              :display_count => false
+                              :display_name  => model_name
+                              #:display_count => false
                               )
       attributes.each do |attribute|
         temp_attr = NavAttribute.new(:name          => attribute,

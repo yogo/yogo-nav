@@ -4,12 +4,12 @@ class NavigationController < ApplicationController
     @nav_models = NavModel.all
   end
   
-  def update_navigation
+  def update
     @nav_model = NavModel.get(params['id'])
     @nav_model.update(:included      => params['nav_model']['included'],
                       :display_name  => params['nav_model']['display_name'],
-                      :controller    => params['nav_model']['controller'],
-                      :display_count => params['nav_model']['display_count']
+                      :controller    => params['nav_model']['controller']
+                      #:display_count => params['nav_model']['display_count']
                       )
     params['nav_model']['attributes'].each_pair do |attr_name, attr_settings|
       current_attribute = nil
@@ -27,13 +27,9 @@ class NavigationController < ApplicationController
         if x.include?('hard')
           db_val.update(:value => y['database_value'])
           dp_val.update(:value => y['display_value'])
-          db_val.save
-          dp_val.save
         elsif x.include?('soft')
           db_val.update(:value => "#{y['min_value']}..#{y['max_value']}")
           dp_val.update(:value => y['display_value'])
-          db_val.save
-          dp_val.save
         end
         dp_val.nav_database_value = db_val
         current_attribute.nav_display_values << dp_val
@@ -57,7 +53,7 @@ class NavigationController < ApplicationController
 
   def add_value
     session[:counter] ||= 0
-    session[:counter] += 1
+    session[:counter] +=1
     if params[:value_type] == "true"
       render :partial => 'soft_value', :locals => {:counter => session[:counter]}
     elsif params[:value_type] == "false"

@@ -1,4 +1,4 @@
-<% form_tag( {:controller => :navigation, :action => :update_navigation}, :with =>{:id => params[:id]}, :method => :get, :name => "thing", :id => @nav_model.id) do %>
+<% form_tag( {:controller => :navigation, :action => :update}, :with =>{:id => params[:id]}, :method => :get, :name => "thing", :id => @nav_model.id) do %>
 <table>
 	<tr>
 			<td>
@@ -17,15 +17,15 @@
 						<td><li>Display Name:</td> 
 						<td><%= text_field_tag 'nav_model[display_name]', @nav_model.display_name, :size => 20 %></li></td>
 					</tr>	
-					<tr>
+					<!-- <tr>
 						<td><li>Display Count?:</td> 
-						<td><%= select_tag 'nav_model[display_count]', options_for_select([ 'true', 'false' ], :selected => @nav_model.display_count.to_s) %></li></td>
-					</tr>
+						<td><%#= select_tag 'nav_model[display_count]', options_for_select([ 'true', 'false' ], :selected => @nav_model.display_count.to_s) %></li></td>
+					</tr> -->
 				</table>
 			</ul>
 			<h4>Attributes:</h4><br>
 			<% @nav_model.nav_attributes.each do |attrib| %>
-				<h5><%= attrib.name %></h5> Remove <%= attrib.name %>? <%= check_box_tag "nav_model[attributes_to_delete][#{attrib.id}]" %>
+				<h5><%= attrib.name %></h5> Remove <%= attrib.name + '?' %><%= check_box_tag "nav_model[attributes_to_delete][#{attrib.id}]" %>
 				<ul>
 					<table>
 						<tr>
@@ -33,19 +33,27 @@
 								<table>
 									<tr>
 										<td><li>Included?:</td> 
-										<td><%= select_tag "nav_model[attributes][#{attrib.name}][included]", options_for_select([ 'true', 'false' ], :selected => attrib.included.to_s) %></li></td>
+										<td><%= select_tag "nav_model[attributes][#{attrib.name}][included]", 
+										        	options_for_select([ 'true', 'false' ], 
+										        	:selected => attrib.included.to_s) %></li></td>
 									</tr>
 									<tr>
 										<td><li>Display Name:</td> 
-										<td><%= text_field_tag "nav_model[attributes][#{attrib.name}][display_name]", attrib.display_name, :size => 20 %></li></td>
+										<td><%= text_field_tag "nav_model[attributes][#{attrib.name}][display_name]", 
+										        	attrib.display_name, :size => 20 %></li></td>
 									</tr>
 									<tr>
 										<td><li>Display Count?:</td> 
-										<td><%= select_tag "nav_model[attributes][#{attrib.name}][display_count]", options_for_select([ 'true', 'false' ], :selected => attrib.display_count.to_s) %></li></td>
+										<td><%= select_tag "nav_model[attributes][#{attrib.name}][display_count]", 
+										        	options_for_select([ 'true', 'false' ], 
+										        	:selected => attrib.display_count.to_s) %></li></td>
 									</tr>
 									<tr>
 										<td><li>Range?:</td> 
-										<td><%= select_tag "nav_model[attributes][#{attrib.name}][range]", options_for_select([ 'true', 'false' ], :selected => attrib.range.to_s, :id => "#{@nav_model.name}_#{attrib.name}") %></li>
+										<td><%= select_tag "nav_model[attributes][#{attrib.name}][range]", 
+										        	options_for_select([ 'true', 'false' ], 
+										        	:selected => attrib.range.to_s, 
+										        	:id => "#{@nav_model.name}_#{attrib.name}") %></li>
 									</tr>
 									<tr>
 										<td>

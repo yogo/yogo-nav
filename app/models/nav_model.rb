@@ -9,6 +9,6 @@ class NavModel
   property :included, Boolean
   property :controller, String
   property :display_name, String
-  property :display_count, Boolean
+  #property :display_count, Boolean
   
 end

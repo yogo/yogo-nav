@@ -7,8 +7,7 @@ module NavHelper
   
   private
   
-  def nav_display(controller, level=1)
-    
+  def nav_display(controller, level=1)    
     table = fetch_table_by_controller(controller)
     history = [table]
     if controller_included? && NavModel.first(:name => table).included && !empty_contents?(table)
@@ -24,6 +23,7 @@ module NavHelper
           # has been resolved, it continues on the the remaining attributes.
           if attribute.class == Hash
             attribute.each_pair do |relative_table, relationship|
+              # Recursion ends here.
               unless relative_table == table
                 history << relative_table
                 display += nav_display_prime(relative_table, level += 1, table, history)
@@ -31,6 +31,8 @@ module NavHelper
               end
             end
           else
+            # If the attribute is not a hash, it is a plain attribute, and this portion lists the attribute
+            # along with its values stored in the database.
             display += "<a href='#' onclick=\"toggle_visibility" +
                        "('#{table + level.to_s + attribute}');\">" +
                        "#{fetch_attribute_name(table, attribute)}</a><br>\n"
@@ -97,15 +99,14 @@ module NavHelper
         end
       end
     end
-    # if NAV_CONFIG[table]['attributes']
-    # attributes.sort_by {|attribute| attribute}
-    # if has_relationships?(table)
-    #   fetch_relationships(table).each_pair do |relative_table, relationship|
-    #     unless !NAV_CONFIG[relative_table]['searchable']
-    #       attributes << {relative_table => relationship} 
-    #     end
-    #   end
-    # end
+    #attributes << {'beta' => 'belongs_to'}
+    if has_relationships?(table)
+      fetch_relationships(table).each_pair do |relative_table, relationship|
+        if NavModel.first(:name => relative_table).included
+          attributes << {relative_table => relationship} 
+        end
+      end
+    end
     return attributes
   end
   
@@ -187,7 +188,7 @@ module NavHelper
     controller = NavModel.first(:name => table).controller
     database_value = fetch_db_value(table, attribute, range)
     if params[table.to_sym] == nil
-      link_to("#{range}", "#{controller}?#{request.url.split("?")[1]}&#{table}[#{attribute}]=#{database_value}")
+      link_to("#{range}", "#{controller}?#{request.url.split("?")[1]}&#{table}[#{attribute}]=#{database_value}") + fetch_count(table, attribute, range)
     else
       # If the attribute has already been selected, display plain text and not a link.
       if params[table.to_sym][attribute] == database_value
@@ -202,6 +203,12 @@ module NavHelper
   
   def fetch_path_prime(table, attribute, range, history=nil)
     link_to("fetch_path_prime", "#{history}")
+  end
+  
+  def fetch_count(table, attribute, range)
+    #if NavModel.first(:name => table).display_count
+      return 'hello'
+    #end
   end
 
   # Gathers the database value out of the nav_config.yml file using the display value as a 
@@ -255,12 +262,7 @@ module NavHelper
   # Returns true is the specified table has a relationship that requires it to be considered
   # a "sub"-attribute.
   def has_relationships?(table)
-    table.capitalize.constantize.relationships.values.each do |value|
-      if value.child_model_name != table.capitalize || :has_and_belongs_to_many
-        return true
-      end
-    end
-      return false
+    !table.capitalize.constantize.relationships.empty?
   end
   
   # Appends table relationships to the list of attributes for each table in hash form to be
@@ -268,9 +270,9 @@ module NavHelper
   def fetch_relationships(table)
     table = table.capitalize.constantize
     relationships = {}
-    table.relationships.values.each do |value|
-      if value.child_model_name != nil
-        relationships.update({value.child_model_name.to_s.capitalize.constantize.to_s.downcase => "relationship"})
+    table.relationships.each_pair do |table, relationship|
+      if relationship.child_model != table
+        relationships.update({relationship.child_model_name.capitalize.constantize.to_s.downcase => "relationship"})
       end
     end
     relationships
@@ -331,13 +333,13 @@ module NavHelper
 
   def print_breadcrumbs
     validate_breadcrumbs
-    out = [ link_to("Root", :controller => "root", :action => "index"), link_to("#{request.parameters[:controller]}", :controller => "root", :action => "index") ]
+    out = [ link_to("Home", :controller => "root", :action => "index"), link_to("#{request.parameters[:controller].capitalize}", :controller => "#{request.parameters[:controller]}", :action => "index") ]
     unless session[:breadcrumbs].empty?
       out << session[:breadcrumbs].map {|crumb|
         if session[:breadcrumbs][-1] == crumb
-         # "#{NAV_CONFIG[fetch_table_by_controller(request.parameters[:controller]).to_s.downcase]['attributes'][crumb[:name]]['display_value']} : #{crumb[:value].titleize}"
+          "#{NavModel.first(:name => fetch_table_by_controller(request.parameters[:controller]).to_s.downcase).nav_attributes.first(:name => crumb[:name]).name} : #{crumb[:value].titleize}"
         else
-         # link_to("#{NAV_CONFIG[fetch_table_by_controller(request.parameters[:controller]).to_s.downcase]['attributes'][crumb[:name]]['display_value']}" + " : " + crumb[:value].titleize, crumb[:link])
+          link_to("#{NavModel.first(:name => fetch_table_by_controller(request.parameters[:controller]).to_s.downcase).nav_attributes.first(:name => crumb[:name]).name}" + " : " + crumb[:value].titleize, crumb[:link])
         end
       }
     end
