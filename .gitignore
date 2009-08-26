@@ -1,1 +1,11 @@
 .DS_Store
+app/controllers/alphas_controller.rb
+app/controllers/betas_controller.rb
+app/controllers/omegas_controller.rb
+app/helpers/navigation_helper.rb
+app/models/alpha.rb
+app/models/beta.rb
+app/models/omega.rb
+app/views/alphas/*
+app/views/betas/*
+app/views/omegas/*
